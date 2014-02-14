@@ -1,0 +1,61 @@
+apply plugin: "maven-publish"
+
+// String parameters for command line usage
+ext {
+	fromRepo = "http://repo1.maven.org/maven2"
+	dependency = "junit:junit:4.11"
+	toRepo = "testRepo"
+	uploadFile = "testfile.txt"
+}
+
+configurations {
+	artifactToDownload
+	artifactToUpload
+}
+
+// *** DOWNLOAD ***
+// no plugins required since dependency resolution is in gradle-core
+
+repositories { maven { url fromRepo } }
+
+dependencies {
+	artifactToDownload(dependency) { transitive = false }
+}
+
+// configuration of this task will resolve the dependencies,
+// executing it will create the files
+task download(type: Copy){
+	from configurations.artifactToDownload
+	into buildDir
+}
+
+// ****************
+
+
+// **** UPLOAD ****
+// this requires 'maven-publish' plugin
+
+// need a task of type "AbstractArchiveTask"
+task createArtifact(type: Zip) {
+	from file(uploadFile)
+	into "archive.zip" // this will be ignored due to maven naming conventions
+}
+
+// "the artifact named 'artifactToUpload' is created by the 'createArtifact' task"
+artifacts { artifactToUpload createArtifact }
+
+publishing {
+	repositories { maven { url toRepo } }
+	publications {
+		myPublication(MavenPublication) {
+			artifact createArtifact
+			groupId "de.thokari"
+			version "0.5"
+		}
+	}
+}
+
+// task name alias
+task upload { dependsOn publish }
+
+// ****************
