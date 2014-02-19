@@ -10,7 +10,6 @@ ext {
 
 configurations {
 	artifactToDownload
-	artifactToUpload
 }
 
 // *** DOWNLOAD ***
@@ -35,20 +34,11 @@ task download(type: Copy){
 // **** UPLOAD ****
 // this requires 'maven-publish' plugin
 
-// need a task of type "AbstractArchiveTask"
-task createArtifact(type: Zip) {
-	from file(uploadFile)
-	into "archive.zip" // this will be ignored due to maven naming conventions
-}
-
-// "the artifact named 'artifactToUpload' is created by the 'createArtifact' task"
-artifacts { artifactToUpload createArtifact }
-
 publishing {
 	repositories { maven { url toRepo } }
 	publications {
 		myPublication(MavenPublication) {
-			artifact createArtifact
+			artifact "testfile.txt"
 			groupId "de.thokari"
 			version "0.5"
 		}
